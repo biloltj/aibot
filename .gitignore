@@ -3,6 +3,11 @@ __pycache__/
 *.py[codz]
 *$py.class
 
+# .gitignore content
+# Bot Persistence Files
+arbitrarycallbackdatabot
+arbitrarycallbackdatabot.bak # Backup file created by persistence
+
 # C extensions
 *.so
 

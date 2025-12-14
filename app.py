@@ -24,7 +24,7 @@ from gpt import chat_gpt
 
 # Gemini usage limits
 MAX_GEMINI_USES = 10          
-COOLDOWN_MINUTES = 10        
+COOLDOWN_MINUTES = 2        
 COOLDOWN_KEY = 'gemini_cooldown'
 USE_COUNT_KEY = 'gemini_use_count'
 
@@ -54,7 +54,7 @@ AI_MODELS = {
     "gemini": {"display": "😎 Gemini", "enabled": True},
     "chatgpt": {"display": "👽 ChatGPT", "enabled": True},
     "grok": {"display": "☠ Grok", "enabled": False},
-    "claude": {"display": "👾 Claude", "enabled": False},
+    "claude": {"display": "👾 Claude", "enabled": True},
     "deepseek": {"display": "🤖 DeepSeek", "enabled": False}
 }
 
@@ -210,19 +210,23 @@ async def help_command(update: Update, context: ContextTypes.DEFAULT_TYPE) -> No
     /help command - Display bot usage information.
     """
     help_text = (
-        "🤖 *Multi-AI Chat Bot Help*\n\n"
-        "*Available Commands:*\n"
+        "🤖 Multi-AI Chat Bot Help\n\n"
+        "Available Commands:\n"
         "• /start - Start the bot and select an AI model\n"
-        "• /reset - Clear conversation history and reselect model\n"
-        "• /help - Show this help message\n"
-        "• /status - Check your Gemini usage status\n\n"
-        "*Available Models:*\n"
+        "• /switch - Switch to a different AI model\n"
+        "• /exit - Exit current model (keeps history)\n"
+        "• /reset - Clear all conversation history\n"
+        "• /status - Check your usage statistics\n"
+        "• /help - Show this help message\n\n"
+        "Available Models:\n"
         "• 😎 Gemini - Google's AI (with image analysis)\n"
         "• 👽 ChatGPT - OpenAI's GPT model\n"
-        "• More coming soon!\n\n"
-        "*Tips:*\n"
+        "• 👾 Claude - Anthropic's Claude AI\n"
+        "• ☠ Grok - xAI's Grok model\n"
+        "• 🤖 DeepSeek - DeepSeek AI model\n\n"
+        "Tips:\n"
         "- Send text messages to chat with the selected AI\n"
-        "- Send images (Gemini only) for visual analysis\n"
+        "- Send images (Gemini/Claude) for visual analysis\n"
         f"- Gemini has a limit of {MAX_GEMINI_USES} uses per {COOLDOWN_MINUTES} minutes"
     )
     
@@ -238,7 +242,6 @@ async def reset_command(update: Update, context: ContextTypes.DEFAULT_TYPE) -> N
     - Clears model selection
     - Resets to initial state
     """
-    # Clear Gemini session cache
     if '_gemini_session_cache' in context.user_data:
         del context.user_data['_gemini_session_cache']
     
@@ -259,7 +262,7 @@ async def status_command(update: Update, context: ContextTypes.DEFAULT_TYPE) -> 
     selected_model = context.user_data.get('menu_selection', 'None')
     
     status_text = (
-        f"📊 *Your Status*\n\n"
+        f"📊 Your Status\n\n"
         f"Selected Model: {selected_model.title() if selected_model else 'None'}\n"
         f"Gemini Uses: {use_count}/{MAX_GEMINI_USES}\n"
     )
@@ -276,6 +279,84 @@ async def status_command(update: Update, context: ContextTypes.DEFAULT_TYPE) -> 
         status_text += "Cooldown: Not active"
     
     await update.message.reply_text(status_text, parse_mode='Markdown')
+
+
+async def exit_command(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
+    """
+    /exit command - Exit current model and return to model selection.
+    
+    What it does:
+    - Clears current model selection
+    - Keeps conversation history intact (unlike /reset)
+    - Shows model selection keyboard again
+    - User can switch models without losing conversation data
+    
+    Use cases:
+    - User wants to try a different AI model
+    - Current model is having issues
+    - Quick model switching during conversation
+    """
+    selected_model = context.user_data.get('menu_selection')
+    
+    if selected_model:
+        # Clear model selection but keep conversation histories
+        context.user_data['menu_selection'] = None
+        
+        await update.message.reply_text(
+            f"👋 Exited from {AI_MODELS.get(selected_model, {}).get('display', selected_model)}.\n"
+            f"Your conversation history is preserved.\n\n"
+            f"Select a new model below:",
+            reply_markup=build_keyboard(AI_MODELS)
+        )
+    else:
+        await update.message.reply_text(
+            "ℹ️ No model currently selected.\n"
+            "Use /start to begin."
+        )
+
+
+async def switch_command(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
+    """
+    /switch command - Switch to a different AI model.
+    
+    Difference from /exit:
+    - /exit: Just exits, shows keyboard
+    - /switch: Exits and shows keyboard (essentially the same for now)
+    
+    Benefits:
+    - More intuitive command name for users
+    - Can be extended to show current model first
+    - Provides context about what will happen
+    
+    Future enhancements:
+    - Could show side-by-side model comparisons
+    - Could suggest best model for user's query type
+    - Could preserve separate histories per model
+    """
+    selected_model = context.user_data.get('menu_selection')
+    
+    # Build status message
+    if selected_model:
+        current_model_name = AI_MODELS.get(selected_model, {}).get('display', selected_model)
+        status_msg = f"🔄 Switching from {current_model_name}.\n\n"
+    else:
+        status_msg = "🔄 Choose your AI model:\n\n"
+    
+    # Clear selection
+    context.user_data['menu_selection'] = None
+    
+    # Show available models
+    status_msg += "Available models:\n"
+    for model_id, config in AI_MODELS.items():
+        if config["enabled"]:
+            status_msg += f"• {config['display']}\n"
+    
+    status_msg += "\nSelect one below:"
+    
+    await update.message.reply_text(
+        status_msg,
+        reply_markup=build_keyboard(AI_MODELS)
+    )
 
 
 # ============================================================================
@@ -415,7 +496,7 @@ async def image_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
         await context.bot.edit_message_text(
             chat_id=update.message.chat_id,
             message_id=sent_message.message_id,
-            text=f"🖼️ *Image Analysis:*\n\n{gemini_response}",
+            text=f"🖼️ Image Analysis:\n\n{gemini_response}",
             parse_mode='Markdown'
         )
         
@@ -556,6 +637,8 @@ def main() -> None:
     application.add_handler(CommandHandler("help", help_command))
     application.add_handler(CommandHandler("reset", reset_command))
     application.add_handler(CommandHandler("status", status_command))
+    application.add_handler(CommandHandler("exit", exit_command))
+    application.add_handler(CommandHandler("switch", switch_command))
     
     # Register callback handlers (order matters!)
     application.add_handler(

@@ -7,10 +7,10 @@ __pycache__/
 # Bot Persistence Files
 arbitrarycallbackdatabot
 arbitrarycallbackdatabot.bak # Backup file created by persistence
-
+bot_data
 # C extensions
 *.so
-
+ai/
 # Distribution / packaging
 .Python
 build/

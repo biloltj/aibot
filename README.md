@@ -71,7 +71,7 @@ aibot/
 ├── app.py              # Main bot (UPDATED)
 ├── gemini.py           # Google Gemini API
 ├── gpt.py              # OpenAI ChatGPT API (UPDATED)
-├── claude_api.py       # Anthropic Claude API (NEW)
+├── claude.py       # Anthropic Claude API (NEW)
 ├── grok.py             # xAI Grok API (NEW)
 ├── deepseek.py         # DeepSeek API (NEW)
 ├── .env                # API keys (NEVER commit!)

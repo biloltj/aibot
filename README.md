@@ -77,7 +77,7 @@ aibot/
 ├── .env                # API keys (NEVER commit!)
 ├── .gitignore          # Ignore sensitive files
 ├── requirements.txt    # Python dependencies
-└── bot_data            # Persistent storage (auto-created)
+
 ```
 
 ---

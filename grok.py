@@ -3,7 +3,7 @@ from typing import List, Dict, Optional
 from dotenv import load_dotenv
 
 load_dotenv()
-API_KEY = "xai-gyJtfR5w9Co6dRQdzijBhxWnRgotVglAjCZaDY2R25o1oi1E9XhdVu1q0rLu9Yc1z6rFRrj3riFNiLRW"
+API_KEY = "XAI_API_KEY"
 
 if not API_KEY:
     raise ValueError(

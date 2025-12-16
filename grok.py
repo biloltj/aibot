@@ -3,7 +3,7 @@ from typing import List, Dict, Optional
 from dotenv import load_dotenv
 
 load_dotenv()
-API_KEY = "XAI_API_KEY"
+API_KEY = "GROK_API_KEY"
 
 if not API_KEY:
     raise ValueError(
@@ -97,18 +97,12 @@ def analyze_image_grok(
         import base64
         from xai_sdk.chat import user, image
         
-        # Grok accepts images as URLs or base64
-        # For simplicity, we'll upload to a temporary URL
-        # In production, you'd use a proper image hosting service
         
-        # Create a single-use chat for vision
         chat = client.chat.create(model=model)
         
-        # Encode image to base64
+        
         base64_image = base64.b64encode(image_data).decode('utf-8')
         
-        # Create data URL (embedded image)
-        # This is a standard way to embed images in web contexts
         image_url = f"data:image/jpeg;base64,{base64_image}"
         
         # Append message with image and text
@@ -138,8 +132,6 @@ def chat_grok_openai_style(
     try:
         from openai import OpenAI
         
-        # Initialize OpenAI client with xAI endpoint
-        # This is the "compatibility trick" - same SDK, different server
         xai_client = OpenAI(
             api_key=API_KEY,
             base_url="https://api.x.ai/v1"
@@ -191,10 +183,6 @@ def test_grok_connection() -> bool:
         print(f"Grok connection test failed: {e}")
         return False
 
-
-# ============================================================================
-# EXAMPLE USAGE
-# ============================================================================
 
 if __name__ == "__main__":
     """

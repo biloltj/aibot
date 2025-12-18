@@ -16,7 +16,6 @@ from telegram.ext import (
     PicklePersistence
 )
 
-# Import your model modules
 from gemini import chat_gemini, create_new_gemini_chat, analyze_image_gemini
 from gpt import chat_gpt, estimate_tokens  
 from grok import chat_grok, create_grok_chat, analyze_image_grok
@@ -30,7 +29,7 @@ COOLDOWN_KEY = 'gemini_cooldown'
 USE_COUNT_KEY = 'gemini_use_count'
 
 
-MAX_GROK_RPM = 5  # 5 requests per minute
+MAX_GROK_RPM = 5 
 MAX_GROK_TPM = 10000  # 10,000 tokens per minute
 GROK_COOLDOWN_MINUTES = 1  # 1-minute cooldown
 GROK_RPM_KEY = 'grok_rpm_count'
